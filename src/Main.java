@@ -3,44 +3,49 @@ import javax.swing.*;
 import java.awt.event.*;
 
 public class Main extends JPanel implements KeyListener {
-    private static final int CANVAS_WIDTH = 1000;
-    private static final int CANVAS_HEIGHT = 1000;
-    private static final int PIXEL_SIZE = 32;
+    private static final int CANVAS_WIDTH = 905;
+    private static final int CANVAS_HEIGHT = 905;
+    private static final int PIXEL_SIZE = 30;
     private static final int PIXEL_COLOR = Color.RED.getRGB();
-    private int pixelX = 0;
-    private int pixelY = 0;
-    private int[][] pixels;
+    private int pixelX = 5;
+    private int pixelY = 5;
+    private int pixelLength = 1;
+    private int[] pixelXCoords;
+    private int[] pixelYCoords;
 
     public Main() {
-        pixels = new int[CANVAS_WIDTH/PIXEL_SIZE][CANVAS_HEIGHT/PIXEL_SIZE];
+        pixelXCoords = new int[pixelLength];
+        pixelYCoords = new int[pixelLength];
+        pixelXCoords[0] = pixelX;
+        pixelYCoords[0] = pixelY;
         setPreferredSize(new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT));
-        setBackground(Color.WHITE);
+        setBackground(Color.DARK_GRAY);
+        setBorder(BorderFactory.createLineBorder(Color.GREEN, 5));
         addKeyListener(this);
         setFocusable(true);
     }
 
-    public void setPixel(int x, int y, int color) {
-        pixels[x][y] = color;
-        repaint();
-    }
-
     public void movePixel(int dx, int dy) {
-        pixelX += dx;
-        pixelY += dy;
+        if (pixelX + dx < CANVAS_WIDTH - 10 && pixelY + dy < CANVAS_HEIGHT - 10 && pixelY + dy >= 0 && pixelX + dx >= 0) {
+            for (int i = pixelLength - 1; i > 0; i--) {
+                pixelXCoords[i] = pixelXCoords[i-1];
+                pixelYCoords[i] = pixelYCoords[i-1];
+            }
+            pixelX += dx;
+            pixelY += dy;
+            pixelXCoords[0] = pixelX;
+            pixelYCoords[0] = pixelY;
+        }
         repaint();
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        for (int x = 0; x < CANVAS_WIDTH/PIXEL_SIZE; x++) {
-            for (int y = 0; y < CANVAS_HEIGHT/PIXEL_SIZE; y++) {
-                g.setColor(new Color(pixels[x][y]));
-                g.fillRect(x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
-            }
+        for (int i = 0; i < pixelLength; i++) {
+            g.setColor(new Color(PIXEL_COLOR));
+            g.fillRect(pixelXCoords[i], pixelYCoords[i], PIXEL_SIZE, PIXEL_SIZE);
         }
-        g.setColor(new Color(PIXEL_COLOR));
-        g.fillRect(pixelX, pixelY, PIXEL_SIZE, PIXEL_SIZE);
     }
 
     public void keyPressed(KeyEvent e) {
@@ -62,10 +67,26 @@ public class Main extends JPanel implements KeyListener {
                 System.out.println("Down key pressed");
                 movePixel(0, PIXEL_SIZE);
                 break;
+            case KeyEvent.VK_ENTER:
+                System.out.println("Enter Pressed");
+                pixelLength++;
+                int[] newPixelXCoords = new int[pixelLength];
+                int[] newPixelYCoords = new int[pixelLength];
+                for (int i = 0; i < pixelLength - 1; i++) {
+                    newPixelXCoords[i] = pixelXCoords[i];
+                    newPixelYCoords[i] = pixelYCoords[i];
+                }
+                newPixelXCoords[pixelLength - 1] = pixelXCoords[pixelLength - 2];
+                newPixelYCoords[pixelLength - 1] = pixelYCoords[pixelLength - 2];
+                pixelXCoords = newPixelXCoords;
+                pixelYCoords = newPixelYCoords;
+                repaint();
+                break;
         }
     }
 
     public void keyReleased(KeyEvent e) {}
+
     public void keyTyped(KeyEvent e) {}
 
     public static void main(String[] args) {
