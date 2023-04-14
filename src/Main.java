@@ -1,6 +1,7 @@
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+import java.lang.Math;
 
 public class Main extends JPanel implements KeyListener {
     private static final int CANVAS_WIDTH = 905;
@@ -12,10 +13,12 @@ public class Main extends JPanel implements KeyListener {
     private int pixelLength = 1;
     private int[] pixelXCoords;
     private int[] pixelYCoords;
+    private boolean[] randomPixels;
 
     public Main() {
         pixelXCoords = new int[pixelLength];
         pixelYCoords = new int[pixelLength];
+        randomPixels = new boolean[CANVAS_WIDTH * CANVAS_HEIGHT];
         pixelXCoords[0] = pixelX;
         pixelYCoords[0] = pixelY;
         setPreferredSize(new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT));
@@ -36,6 +39,12 @@ public class Main extends JPanel implements KeyListener {
             pixelXCoords[0] = pixelX;
             pixelYCoords[0] = pixelY;
         }
+        for (int i = 0; i < randomPixels.length; i++) {
+            if (randomPixels[i] && pixelX == i % CANVAS_WIDTH && pixelY == i / CANVAS_WIDTH) {
+                randomPixels[i] = false;
+                pixelLength--;
+            }
+        }
         repaint();
     }
 
@@ -46,9 +55,16 @@ public class Main extends JPanel implements KeyListener {
             g.setColor(new Color(PIXEL_COLOR));
             g.fillRect(pixelXCoords[i], pixelYCoords[i], PIXEL_SIZE, PIXEL_SIZE);
         }
+        for (int i = 0; i < randomPixels.length; i++) {
+            if (randomPixels[i]) {
+                g.setColor(Color.YELLOW);
+                g.fillRect(i % CANVAS_WIDTH, i / CANVAS_WIDTH, PIXEL_SIZE, PIXEL_SIZE);
+            }
+        }
     }
 
     public void keyPressed(KeyEvent e) {
+
         int keyCode = e.getKeyCode();
         switch (keyCode) {
             case KeyEvent.VK_LEFT:
@@ -69,15 +85,22 @@ public class Main extends JPanel implements KeyListener {
                 break;
             case KeyEvent.VK_ENTER:
                 System.out.println("Enter Pressed");
-                pixelLength++;
-                int[] newPixelXCoords = new int[pixelLength];
-                int[] newPixelYCoords = new int[pixelLength];
-                for (int i = 0; i < pixelLength - 1; i++) {
+                System.out.println("X Random Number: " + Math.random()*100);
+                System.out.println("Y Random Number: " + Math.random()*100);
+
+                int randomX = (int)(Math.random() * CANVAS_WIDTH);
+                int randomY = (int)(Math.random() * CANVAS_HEIGHT);
+
+                // Add new pixel with different texture
+                int[] newPixelXCoords = new int[pixelLength + 1];
+                int[] newPixelYCoords = new int[pixelLength + 1];
+                for (int i = 0; i < pixelLength; i++) {
                     newPixelXCoords[i] = pixelXCoords[i];
                     newPixelYCoords[i] = pixelYCoords[i];
                 }
-                newPixelXCoords[pixelLength - 1] = pixelXCoords[pixelLength - 2];
-                newPixelYCoords[pixelLength - 1] = pixelYCoords[pixelLength - 2];
+                newPixelXCoords[pixelLength] = randomX;
+                newPixelYCoords[pixelLength] = randomY;
+                pixelLength++;
                 pixelXCoords = newPixelXCoords;
                 pixelYCoords = newPixelYCoords;
                 repaint();
